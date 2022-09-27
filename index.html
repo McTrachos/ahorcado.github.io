@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="style.css">
+        <title>Ahorcado</title>
+    </head>
+    <body>
+        <header>
+            <div>
+                <img src="image/logoAlura.png" alt="logo Alura">
+            </div>
+            <div id="conf">
+                <button>&#9881;</button>
+            </div>
+
+        </header>
+        <main>
+            <section id="inicio">
+                <button onclick="Principal()">Iniciar</button>
+                <button onclick="nuevaPalabra()">Agregar nueva palabra</button>
+            </section>
+            
+            <section id="agregarPalabra">
+                <input type="text" id="nuevaPalabra" placeholder="Ingrese una palabra" autocomplete="off" autofocus>
+                <div class="botones">
+                    <p>¡Palabras de máximo 8 letras!</p>
+                    <button onclick="AddSecretWord()">Guardar Palabra</button>
+                    <button onclick="inicio()">Cancelar</button>
+                </div>
+            </section>
+            <section id="juego">
+                <canvas width="600" height="800"></canvas>
+                
+                <table id="teclado">
+                    <tr>
+                        <td><button value="Q" onclick="PressKey(this)">Q</button></td>
+                        <td><button value="W" onclick="PressKey(this)">W</button></td>
+                        <td><button value="E" onclick="PressKey(this)">E</button></td>
+                        <td><button value="R" onclick="PressKey(this)">R</button></td>
+                        <td><button value="T" onclick="PressKey(this)">T</button></td>
+                        <td><button value="Y" onclick="PressKey(this)">Y</button></td>
+                        <td><button value="U" onclick="PressKey(this)">U</button></td>
+                        <td><button value="I" onclick="PressKey(this)">I</button></td>
+                        <td><button value="O" onclick="PressKey(this)">O</button></td>
+                        <td><button value="P" onclick="PressKey(this)">P</button></td>
+                    </tr>
+                    <tr>
+                        <td><button value="A" onclick="PressKey(this)">A</button></td>
+                        <td><button value="S" onclick="PressKey(this)">S</button></td>
+                        <td><button value="D" onclick="PressKey(this)">D</button></td>
+                        <td><button value="F" onclick="PressKey(this)">F</button></td>
+                        <td><button value="G" onclick="PressKey(this)">G</button></td>
+                        <td><button value="H" onclick="PressKey(this)">H</button></td>
+                        <td><button value="J" onclick="PressKey(this)">J</button></td>
+                        <td><button value="K" onclick="PressKey(this)">K</button></td>
+                        <td><button value="L" onclick="PressKey(this)">L</button></td>
+                        <td><button value="Ñ" onclick="PressKey(this)">Ñ</button></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><button value="Z" onclick="PressKey(this)">Z</button></td>
+                        <td><button value="X" onclick="PressKey(this)">X</button></td>
+                        <td><button value="C" onclick="PressKey(this)">C</button></td>
+                        <td><button value="V" onclick="PressKey(this)">V</button></td>
+                        <td><button value="B" onclick="PressKey(this)">B</button></td>
+                        <td><button value="N" onclick="PressKey(this)">N</button></td>
+                        <td><button value="M" onclick="PressKey(this)">M</button></td>
+                    </tr>
+                </table>
+
+                <div class="botones">
+                    <button onclick="iniciar()">Reiniciar Juego</button>
+                    <button onclick="inicio()">Volver al menú</button>
+                </div>
+            </section>
+        </main>
+
+        <script src="munheco.js"></script>
+
+        <script>
+            var Game = document.getElementById("juego");
+            var Lobby = document.getElementById("inicio");
+            var AddWord = document.getElementById("agregarPalabra");
+            var lienzo = document.querySelector("canvas");
+            var pincel = lienzo.getContext("2d");
+            const ancho = lienzo.width;
+            const alto = lienzo.height;
+            var Errors = 0;
+            var Hits = 0;
+            var Start = false;
+            var palabras = ["HOLA","CURSO","CHILE","BLANCO","JAVA","ALURA","ERROR","PROGRAMA","ADIOS"];
+            var letrasUsadas = [];
+            var palabraSecreta;
+        </script>
+
+        <script>
+            function inicio() {
+                Game.style.display = "none";
+                Lobby.style.display = "block";
+                AddWord.style.display = "none";
+                Errors = 0;
+                document.getElementById("nuevaPalabra").value = "";
+             }
+             
+             function nuevaPalabra() {
+                Game.style.display = "none";
+                Lobby.style.display = "none";
+                AddWord.style.display = "block";
+                letrasUsadas = [];
+                document.getElementById("nuevaPalabra").focus();
+             }
+             
+             function Principal() {
+                Game.style.display = "block";
+                Lobby.style.display = "none";
+                AddWord.style.display = "none";
+                Start = true;
+                iniciar();
+             }            
+        </script>
+
+        <script>
+            function compararPalabra(palabraNueva) {
+                for (let i = 0; i < palabras.length; i++) {
+                    if(palabras[i] == palabraNueva){
+                        return false;
+                    }        
+                }
+                return true;
+            }
+            
+            function comprobacionLetraUsada(letra){
+                for(let i = 0; i < letrasUsadas.length; i++){
+                    if(letra == letrasUsadas[i]){
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            function comprobacionLetra(letra) {
+                if((letra > 64 && letra < 91) || letra == 192){
+                    if(!comprobacionLetraUsada(letra)){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+                else{
+                    return false;
+                }
+            }
+            
+            function generarPalabraSecreta(palabras){
+                indice = Math.floor(Math.random() * palabras.length);
+                return indice;
+            }
+            
+            function iniciar(){
+                pincel.clearRect(0,0,ancho,alto);
+                numeroErrores = 0;
+                numeroAciertos = 0;
+                letrasUsadas = [];
+                dibujarHorca();
+                palabraSecreta = palabras[generarPalabraSecreta(palabras)];
+                dibujarEspacios(palabraSecreta.length);
+                start = true;
+                window.onkeydown = Play;
+                if(activarTeclado()){
+                    document.getElementById("teclado").style.display = "table";
+                }
+                else{
+                    document.getElementById("teclado").style.display="none";
+                }
+             }
+            
+             function Play(event) {
+                let letra;
+                if(event < 91){
+                    letra = event;
+                }
+                else{
+                    letra = event.keyCode;
+                }
+                let coincidencia = 0;
+                if(start){
+                    if(numeroErrores<9){
+                        if(numeroAciertos < palabraSecreta.length){
+                            if(comprobacionLetra(letra)){
+                                for (let i = 0; i < palabraSecreta.length; i++) {
+                                    if(palabraSecreta.charCodeAt(i) == letra){
+                                        coincidencia++;
+                                        if(letra == 192){
+                                            dibujarLetraCorrecta('Ñ',i);
+                                        }
+                                        else{
+                                            dibujarLetraCorrecta(String.fromCharCode(letra), i);
+                                        }
+                                    }                    
+                                }
+                                if(coincidencia == 0){
+                                    if(letra == 192){
+                                        dibujarLetraIncorrecta('Ñ', numeroErrores);
+                                    }
+                                    else{
+                                        dibujarLetraIncorrecta(String.fromCharCode(letra), numeroErrores);
+                                    }
+                                    letrasUsadas[letrasUsadas.length] = letra;
+                                    numeroErrores++;
+                                    dibujarHorca(numeroErrores);
+                                    if(numeroErrores == 9){
+                                        mensaje(false);
+                                        start = false;
+                                    }
+                                }
+                                else{
+                                    numeroAciertos+=coincidencia;
+                                    if(numeroAciertos == palabraSecreta.length){
+                                        mensaje(true);
+                                        start = false;
+                                    }
+                                    letrasUsadas[letrasUsadas.length] = letra;
+                                }
+                            }
+                        }
+                        else{
+                            mensaje(true);
+                            start = false;
+                        }
+                    }
+                    else{
+                        mensaje(false);
+                        start = false;
+                    }
+                }
+             }
+            
+             function AddNewWord(palabra) {
+                let coincidencia = 0;
+                if(palabra.length<9){
+                        for(let i = 0; i < palabra.length; i++){
+                            if(comprobacionLetra(palabra.charCodeAt(i))){
+                                coincidencia++;
+                            }
+                        }
+                        if(coincidencia == palabra.length){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                }
+                else{
+                    return false;
+                }
+             }
+            
+             function AddSecretWord(){
+                let texto = document.getElementById("nuevaPalabra").value.toUpperCase();
+                if(AddNewWord(texto)){
+                    if(compararPalabra(texto)){
+                        palabras[palabras.length] = texto;
+                        document.getElementById("nuevaPalabra").value = "";
+                        principal();
+                    }
+                    else{
+                        alert("Esa palabra ya esta agregada");
+                    }
+                }
+                else{
+                    alert("Solo una palabra de 8 letras, sin signos especiales");
+                }
+             }
+            
+             function PressKey(tecla){
+                Play(tecla.value.charCodeAt(0));
+             }
+            
+             function activarTeclado(){
+                let navegador = navigator.userAgent;
+                if(navegador.match(/Android/i) || navegador.match(/webOS/i) || navegador.match(/iPhone/i) || navegador.match(/iPad/i) || navegador.match(/iPod/i) || navegador.match(/BlackBerry/i) || navegador.match(/Windows Phone/i)) {
+                    return true;
+                } 
+                else{
+                    return false;
+                }
+             }
+        </script>
+        
+    </body>
+</html>
